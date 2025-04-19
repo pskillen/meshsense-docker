@@ -21,19 +21,16 @@ docker-compose up -d
 
 The following environment variables can be configured in the `docker-compose.yml` file:
 
-| Variable    | Description                                | Default     |
-|-------------|--------------------------------------------|-------------|
-| ADDRESS     | Address of your Meshtastic Node            | 10.0.1.20   |
-| ACCESS_KEY  | Optional access key for authentication     | myAccessKey |
-| PORT        | Optional port for the Meshtastic connection| 5920        |
+| Variable   | Description                                                            | Default     |
+|------------|------------------------------------------------------------------------|-------------|
+| ADDRESS    | Address of the physical radio node hardware that Meshsense connects to | 10.0.1.20   |
+| ACCESS_KEY | Optional secret key for admin privileges in the web UI                 | myAccessKey |
 
 ### Docker Compose
 
 The included `docker-compose.yml` file provides a ready-to-use configuration:
 
 ```yaml
-version: '3'
-
 services:
   meshsense:
     build:
@@ -41,12 +38,11 @@ services:
       dockerfile: Dockerfile
     container_name: meshsense
     environment:
-      - ADDRESS=10.0.1.20  # Address of Meshtastic Node
-      - ACCESS_KEY=myAccessKey  # Optional access key
-      - PORT=5920  # Optional port
+      - ADDRESS=192.168.178.89  # Address of Meshtastic Node (physical radio hardware)
+      # - ACCESS_KEY=myAccessKey  # Optional secret key for admin privileges in web UI
     restart: unless-stopped
     ports:
-      - "8080:8080"  # Example port mapping
+      - "5920:5920"  # Web interface port
 ```
 
 ## Manual Build and Run
@@ -64,10 +60,9 @@ docker build -t meshsense .
 ```bash
 docker run -d \
   --name meshsense \
-  -e ADDRESS=10.0.1.20 \
+  -e ADDRESS=192.168.178.89 \
   -e ACCESS_KEY=myAccessKey \
-  -e PORT=5920 \
-  -p 8080:8080 \
+  -p 5920:5920 \
   meshsense
 ```
 
@@ -90,4 +85,5 @@ docker exec -it meshsense /bin/bash
 - The container runs Meshsense in headless mode with the necessary flags to disable GPU and software rasterization
 - All required dependencies for running Electron in headless mode are included in the Docker image
 - The Meshsense AppImage is automatically downloaded during the Docker image build process
-- The container uses a custom entrypoint script (`docker-entrypoint.sh`) to start Meshsense with the appropriate configuration
+- The container uses a custom entrypoint script (`docker-entrypoint.sh`) to start Meshsense with the appropriate
+  configuration
