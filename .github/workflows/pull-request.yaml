@@ -1,0 +1,48 @@
+name: Pull Request
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          load: true
+          tags: ghcr.io/${{ github.repository }}:pr-${{ github.event.pull_request.number }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Run smoke test
+        run: |
+          # Start the container
+          docker run -d --name meshsense-test -p 5920:5920 -e ADDRESS=127.0.0.1 ghcr.io/${{ github.repository }}:pr-${{ github.event.pull_request.number }}
+          
+          # Give it a moment to start
+          sleep 10
+          
+          # Check if container is running
+          if [ "$(docker inspect -f '{{.State.Running}}' meshsense-test)" != "true" ]; then
+            echo "Container failed to start"
+            docker logs meshsense-test
+            exit 1
+          fi
+          
+          echo "Container started successfully"
+          
+          # Optional: Add more specific health checks if needed
+          
+          # Clean up
+          docker stop meshsense-test
+          docker rm meshsense-test

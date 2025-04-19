@@ -1,0 +1,32 @@
+name: Release
+
+on:
+  release:
+    types: [ published ]
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  extract-tag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract Release Tag
+        id: get_tag
+        run: |
+          echo "VERSION_TAG=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+          echo "IS_PRERELEASE=${{ github.event.release.prerelease }}" >> "$GITHUB_OUTPUT"
+
+    outputs:
+      VERSION_TAG: ${{ steps.get_tag.outputs.VERSION_TAG }}
+      IS_PRERELEASE: ${{ steps.get_tag.outputs.IS_PRERELEASE }}
+
+  build:
+    needs:
+      - extract-tag
+    uses: ./.github/workflows/docker-build.yaml
+    with:
+      VERSION_TAG: ${{ needs.extract-tag.outputs.VERSION_TAG }}
+      IS_PRERELEASE: ${{ fromJson(needs.extract-tag.outputs.IS_PRERELEASE) }}
+      IS_LATEST: true
