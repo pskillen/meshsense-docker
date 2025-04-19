@@ -5,8 +5,8 @@ services:
       dockerfile: Dockerfile
     container_name: meshsense
     environment:
-      - ADDRESS=192.168.178.89  # Address of Meshtastic Node
-    #      - ACCESS_KEY=myAccessKey  # Optional access key      - PORT=5920  # Optional port
+      - ADDRESS=192.168.178.89     # Address of Meshtastic Node (physical radio hardware)
+      # - ACCESS_KEY=myAccessKey   # Optional secret key for admin privileges in web UI
     restart: unless-stopped
     ports:
       - "5920:5920"  # Web interface port
